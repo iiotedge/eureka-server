@@ -1,0 +1,27 @@
+
+#spring:
+#  config:
+#    import: "optional:configserver:http://config-server.default.svc.cluster.local:8888"
+#  application:
+#    name: eureka-server
+#
+#eureka:
+#  client:
+#    register-with-eureka: false  # Because this is the registry
+#    fetch-registry: false
+
+spring:
+  config:
+    import: "optional:configserver:http://config-server.default.svc.cluster.local:8888"
+
+eureka:
+  instance:
+    hostname: ${EUREKA_HOSTNAME:eureka-server.default.svc.cluster.local}
+  client:
+    service-url:
+      defaultZone: ${EUREKA_SERVICE_URL:http://eureka-server.default.svc.cluster.local:8761/eureka/}
+    register-with-eureka: false
+    fetch-registry: false
+  server:
+    enable-self-preservation: true
+    eviction-interval-timer-in-ms: 60000

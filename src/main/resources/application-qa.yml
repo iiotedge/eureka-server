@@ -1,0 +1,13 @@
+server:
+  port: 8761  # Default Eureka port
+
+spring:
+  config:
+    import: "optional:configserver:http://config-server.default.svc.cluster.local:8888"
+  application:
+    name: eureka-server
+
+eureka:
+  client:
+    register-with-eureka: false  # Because this is the registry
+    fetch-registry: false

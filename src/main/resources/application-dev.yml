@@ -1,7 +1,10 @@
 spring:
   config:
     import: "optional:configserver:http://localhost:8888"
-
+  security:
+    user:
+      name: admin
+      password: 8506
 eureka:
   instance:
     hostname: localhost

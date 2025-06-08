@@ -1,20 +1,12 @@
-
-#spring:
-#  config:
-#    import: "optional:configserver:http://config-server.default.svc.cluster.local:8888"
-#  application:
-#    name: eureka-server
-#
-#eureka:
-#  client:
-#    register-with-eureka: false  # Because this is the registry
-#    fetch-registry: false
-
 spring:
   config:
     import: "optional:configserver:http://config-server.default.svc.cluster.local:8888"
-
+  security:
+    user:
+      name: ${SPRING_SECURITY_EUREKA_USERNAME}
+      password: ${SPRING_SECURITY_EUREKA_PASSWORD}
 eureka:
+  environment: ${EUREKA_ENVIRONMENT:production}
   instance:
     hostname: ${EUREKA_HOSTNAME:eureka-server.default.svc.cluster.local}
   client:

@@ -1,14 +1,28 @@
 spring:
   config:
-    import: "optional:configserver:http://config-server.default.svc.cluster.local:8888"
+    import: "optional:configserver:${CONFIG_SERVER_URL:http://config-server.default.svc.cluster.local:8888}"
   security:
     user:
+      # Required - no fallback. A real deployment must supply a real,
+      # dedicated credential (not the Postgres password this used to be
+      # given by iiotedge-cli.sh's client-side connection string).
       name: ${SPRING_SECURITY_EUREKA_USERNAME}
       password: ${SPRING_SECURITY_EUREKA_PASSWORD}
+
 eureka:
   environment: ${EUREKA_ENVIRONMENT:production}
   instance:
     hostname: ${EUREKA_HOSTNAME:eureka-server.default.svc.cluster.local}
+    # Was missing here entirely - only overridden in application-dev.yml,
+    # silently falling back to Spring Cloud Netflix's own defaults (a 30s
+    # lease-renewal-interval) in prod. Every real client on this platform
+    # renews every 10s (see e.g. any microservice's own application-
+    # prod.yml) - a mismatched server-side expectation here is exactly
+    # the kind of thing that causes spurious "clients are all failing to
+    # renew" self-preservation triggers under normal operation, not
+    # actual instability.
+    lease-renewal-interval-in-seconds: 10
+    lease-expiration-duration-in-seconds: 30
   client:
     service-url:
       defaultZone: ${EUREKA_SERVICE_URL:http://eureka-server.default.svc.cluster.local:8761/eureka/}
@@ -17,3 +31,7 @@ eureka:
   server:
     enable-self-preservation: true
     eviction-interval-timer-in-ms: 60000
+    # Same reasoning as the instance-level fix above - was previously
+    # only set in dev, silently using framework defaults here instead.
+    renewal-percent-threshold: 0.85
+    expected-client-renewal-interval-seconds: 10

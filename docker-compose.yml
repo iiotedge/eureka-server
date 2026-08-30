@@ -1,0 +1,28 @@
+# Standalone compose file for running eureka-server on its own via plain
+# Docker (no Kubernetes, no iiotedge-cli.sh/systemd) - eureka-server has
+# no external dependencies of its own (no DB, no broker), so this is
+# genuinely self-contained. For running it as part of the whole local
+# platform stack, see data-ingestion-service/docker-compose.yml instead,
+# which includes this same service alongside every other piece of local
+# infra.
+#
+# Usage:
+#   ./mvnw clean package -DskipTests && docker build -t eureka-server .
+#   EUREKA_SECURITY_PASSWORD=<a-real-value> docker compose up
+services:
+  eureka-server:
+    build: .
+    image: eureka-server:local
+    container_name: eureka-server
+    restart: unless-stopped
+    ports:
+      - "8761:8761"
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_SECURITY_EUREKA_USERNAME: ${EUREKA_SECURITY_USERNAME:-admin}
+      # No compose-file default for the password - a real value has to
+      # come from the environment/.env, same "no safe fallback for a real
+      # credential" reasoning as every other service's prod profile.
+      SPRING_SECURITY_EUREKA_PASSWORD: ${EUREKA_SECURITY_PASSWORD:?Set EUREKA_SECURITY_PASSWORD in your environment or a .env file}
+      EUREKA_HOSTNAME: eureka-server
+      EUREKA_SERVICE_URL: http://eureka-server:8761/eureka/

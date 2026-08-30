@@ -1,0 +1,4 @@
+# Keep the build context small and avoid ever baking local secrets/state
+# into an image layer - only target/eureka-server.jar is needed.
+*
+!target/eureka-server.jar

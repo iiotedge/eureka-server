@@ -1,13 +1,43 @@
 spring:
   config:
+    # Was "optional:configserver::http://localhost:8888" - a stray double
+    # colon after "configserver" that would break the config-import URI
+    # parse. "optional:" already makes this a no-op if nothing answers on
+    # 8888, matching every other service's own convention.
     import: "optional:configserver:http://localhost:8888"
   security:
     user:
-      name: admin
-      password: 8506
+      # Dedicated credential - deliberately NOT "8506" (the Postgres
+      # password) as the fallback, even for local dev: this whole pass
+      # exists to stop treating that value as a shared, reusable secret
+      # (see iiotedge-cli.sh's own updated comment on the same point).
+      # A dev fallback that happens to equal it would quietly undo that
+      # for anyone who never sets the env var.
+      name: ${SPRING_SECURITY_EUREKA_USERNAME:admin}
+      password: ${SPRING_SECURITY_EUREKA_PASSWORD:eureka-dev-only}
+
 eureka:
+  environment: ${EUREKA_ENVIRONMENT:dev}
+
   instance:
-    hostname: localhost
+    hostname: ${EUREKA_HOSTNAME:localhost}
+    lease-renewal-interval-in-seconds: 10
+    lease-expiration-duration-in-seconds: 30
+
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: ${EUREKA_SERVICE_URL:http://localhost:8761/eureka/}
+    register-with-eureka: false
+    fetch-registry: false
+
+  server:
+    enable-self-preservation: true
+    # Run eviction frequently in dev - fast feedback when a local service
+    # instance dies without a clean deregister.
+    eviction-interval-timer-in-ms: 5000
+    # Protect against GC / jitter false-evicting a healthy instance.
+    renewal-percent-threshold: 0.85
+    # Matches instance.lease-renewal-interval-in-seconds above - Eureka's
+    # own self-preservation math compares expected vs. actual renewals
+    # using this value, not the client-side setting directly.
+    expected-client-renewal-interval-seconds: 10

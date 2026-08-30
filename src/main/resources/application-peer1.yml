@@ -1,0 +1,22 @@
+# Not activated by default and no second instance is deployed as part of
+# this pass - this is a ready-to-use template so standing up real 2-node
+# HA later is "add a second deployed instance with -peer2 active" rather
+# than a redesign. Activate alongside "prod" (SPRING_PROFILES_ACTIVE=
+# prod,peer1) on the first node; application-peer2.yml is the mirror for
+# the second node.
+#
+# The two differences from a normal prod boot: this instance registers
+# itself WITH the peer (so it shows up as a replicated node, not just a
+# registry), and fetches the peer's own registry on startup instead of
+# starting empty - that's what makes both nodes converge on the same set
+# of registered services instead of each only knowing about clients that
+# happened to register with it directly.
+eureka:
+  instance:
+    hostname: ${EUREKA_HOSTNAME:eureka-server-1.default.svc.cluster.local}
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      # Points at the OTHER node, not itself - peer1 -> peer2's address.
+      defaultZone: ${EUREKA_PEER_SERVICE_URL:http://eureka-server-2.default.svc.cluster.local:8761/eureka/}

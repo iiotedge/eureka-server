@@ -1,97 +1,115 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<parent>
-		<groupId>com.iotmining</groupId>
-		<artifactId>monitoring-agent</artifactId>
-		<version>0.0.1-SNAPSHOT</version>
-	</parent>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-	<artifactId>eureka-server</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<packaging>jar</packaging>
-	<name>IoTMining - Eureka Server</name>
+    <!-- Migrated from the local monorepo-relative parent chain
+         (com.iotmining:monitoring-agent -> com.iotmining:iotmining-technology)
+         to the published platform parent+BOM, resolved by GAV over the
+         network - same migration already applied to every microservices/*
+         service this session. Also resolves the Java 17-vs-21 mismatch this
+         pom had against the rest of the platform, since the BOM/parent pin
+         21 centrally instead of this pom overriding it locally. -->
+    <parent>
+        <groupId>com.iiotedge.build</groupId>
+        <artifactId>iiotedge-parent</artifactId>
+        <version>2025.08.18</version>
+        <relativePath/>
+    </parent>
 
-	<description>IoT Mining - eureka-server</description>
-	<url/>
-	<licenses>
-		<license/>
-	</licenses>
-	<developers>
-		<developer/>
-	</developers>
-	<scm>
-		<connection/>
-		<developerConnection/>
-		<tag/>
-		<url/>
-	</scm>
-	<properties>
-		<java.version>17</java.version>
-		<sonar.projectKey>${project.artifactId}</sonar.projectKey>
-		<sonar.projectName>${project.name}</sonar.projectName>
-		<sonar.projectVersion>1.0</sonar.projectVersion>
-	</properties>
-	<dependencies>
-		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-config</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
-		</dependency>
+    <artifactId>eureka-server</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>IoTMining - Eureka Server</name>
+    <description>Service registry every microservice on this platform depends on</description>
 
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-security</artifactId>
-		</dependency>
-	</dependencies>
+    <repositories>
+        <repository>
+            <id>github</id>
+            <url>https://maven.pkg.github.com/iiotedge/platform-build</url>
+        </repository>
+    </repositories>
 
-	<build>
-		<finalName>eureka-server</finalName>
-		<plugins>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<goals>
-							<goal>repackage</goal>  <!-- Ensures an executable JAR -->
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<outputDirectory>${project.basedir}/../../out</outputDirectory>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
-<!--	<repositories>-->
-<!--		<repository>-->
-<!--			<id>spring-snapshots</id>-->
-<!--			<name>Spring Snapshots</name>-->
-<!--			<url>https://repo.spring.io/snapshot</url>-->
-<!--			<releases>-->
-<!--				<enabled>false</enabled>-->
-<!--			</releases>-->
-<!--		</repository>-->
-<!--	</repositories>-->
-<!--	<pluginRepositories>-->
-<!--		<pluginRepository>-->
-<!--			<id>spring-snapshots</id>-->
-<!--			<name>Spring Snapshots</name>-->
-<!--			<url>https://repo.spring.io/snapshot</url>-->
-<!--			<releases>-->
-<!--				<enabled>false</enabled>-->
-<!--			</releases>-->
-<!--		</pluginRepository>-->
-<!--	</pluginRepositories>-->
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.iiotedge.build</groupId>
+                <artifactId>iiotedge-bom</artifactId>
+                <version>2025.08.18</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
+    <properties>
+        <java.version>21</java.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-config</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+        <!-- Backs /actuator/prometheus - previously absent from the whole
+             dependency tree, not just unconfigured. -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <finalName>${project.artifactId}</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                    <parameters>true</parameters>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <executions>
+                    <!-- Explicit id "repackage" matters now that the parent chain goes
+                         through spring-boot-starter-parent for real - see the same
+                         fix's own comment on every other migrated service this session. -->
+                    <execution>
+                        <id>repackage</id>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <!-- No custom outputDirectory: the previous ../../out/ convention
+                     was a local-monorepo-dev convenience that actively worked
+                     against CI/CD - same fix as every other migrated service. -->
+            </plugin>
+        </plugins>
+    </build>
 </project>

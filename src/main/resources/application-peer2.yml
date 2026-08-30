@@ -1,0 +1,12 @@
+# Mirror of application-peer1.yml for the second node - see that file's
+# own comment for the full explanation. Activate alongside "prod"
+# (SPRING_PROFILES_ACTIVE=prod,peer2) on the second node.
+eureka:
+  instance:
+    hostname: ${EUREKA_HOSTNAME:eureka-server-2.default.svc.cluster.local}
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      # Points at peer1's address, not itself.
+      defaultZone: ${EUREKA_PEER_SERVICE_URL:http://eureka-server-1.default.svc.cluster.local:8761/eureka/}

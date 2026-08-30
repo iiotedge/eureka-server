@@ -1,13 +1,31 @@
 server:
-  port: 8761  # Default Eureka port
+  port: ${SERVER_PORT:8761}
 
 spring:
-  config:
-    import: "optional:configserver:http://config-server.default.svc.cluster.local:8888"
   application:
     name: eureka-server
+  config:
+    import: "optional:configserver:${CONFIG_SERVER_URL:http://config-server.default.svc.cluster.local:8888}"
+  security:
+    user:
+      # Was missing entirely on this profile - Spring Boot's default
+      # security auto-config would have generated a random password
+      # logged to console on every boot instead of a real, stable one.
+      name: ${SPRING_SECURITY_EUREKA_USERNAME}
+      password: ${SPRING_SECURITY_EUREKA_PASSWORD}
 
 eureka:
+  environment: ${EUREKA_ENVIRONMENT:qa}
+  instance:
+    hostname: ${EUREKA_HOSTNAME:eureka-server.default.svc.cluster.local}
+    lease-renewal-interval-in-seconds: 10
+    lease-expiration-duration-in-seconds: 30
   client:
-    register-with-eureka: false  # Because this is the registry
+    # Because this instance IS the registry.
+    register-with-eureka: false
     fetch-registry: false
+  server:
+    enable-self-preservation: true
+    eviction-interval-timer-in-ms: 30000
+    renewal-percent-threshold: 0.85
+    expected-client-renewal-interval-seconds: 10
